@@ -2,6 +2,9 @@ from fastmcp import FastMCP
 from typing import Annotated
 from pydantic import Field
 import pymysql
+import logging
+
+logger = logging.getLogger("FastMCP")
 
 mcp = FastMCP(name="Drone Order MCP",
               instructions="""
@@ -12,39 +15,15 @@ mcp = FastMCP(name="Drone Order MCP",
 
 @mcp.tool(
     name="query_order",
-    description="查询指定范围指定类型的工单数据",
-    # output_schema={
-    #     "type": "object",
-    #     "properties": {
-    #         "type": "object",
-    #         "properties": {
-    #             "name": {
-    #                 "type": "string",
-    #                 "description": "工单名称"
-    #             },
-    #             "status": {
-    #                 "type": "int",
-    #                 "description": "工单状态工单状态(待派发-1，已派发-2，执行中-3，已完成-4，已评价-5，已关闭-6)"
-    #             },
-    #             "fact_start_time": {
-    #                 "field": "string",
-    #                 "description": "工单实际开始时间",
-    #             },
-    #             "fact_end_time": {
-    #                 "type": "string",
-    #                 "description": "工单实际结束时间",
-    #             },
-    #             "overdue": {
-    #                 "type": "bool",
-    #                 "description": "是否逾期：0表示未逾期，1表示逾期",
-    #             }
-    #         }
-    #     }
-    # }
+    description="查询指定时间范围指定类型的工单数据",
 )
 def query_order(start_time: Annotated[str, Field(description="开始时间,格式为yyyy-DD-mm HH:mm:ss")],
                 end_time: Annotated[str, Field(description="结束时间,格式为yyyy-DD-mm HH:mm:ss")],
-                type: Annotated[str, Field(description="查询工单的类型：1为无人机，2为水印工单")]):
+                type: Annotated[int, Field(description="查询工单的类型：1为无人机，2为水印工单")]):
+
+    if (start_time is None or start_time == "") or end_time is None or type is None:
+        return []
+
     """ 查询指定时间范围的工单数据 """
     conn = pymysql.connect(
         host='mysql.server',
@@ -63,6 +42,7 @@ def query_order(start_time: Annotated[str, Field(description="开始时间,格�
         and b.extend -> '$.workType' = %s
     """
     cursor.execute(query, (start_time, end_time, type))
+    logger.info(query % (start_time, end_time, type))
 
     # 获取查询结果
     query_results = cursor.fetchall()
