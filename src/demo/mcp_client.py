@@ -5,7 +5,7 @@ from fastmcp import Client
 from openai import OpenAI
 
 BASE_URL = "http://192.168.2.236:10000/v1"
-MODEL_NAME = "Qwen3-8B"
+MODEL_NAME = "Qwen3-32B-AWQ"
 KEY = "18e567651c50428c8009f2191aa9773f.A5QNRyfcFveC1RVZ"
 
 
@@ -30,7 +30,7 @@ class MCPClient:
     async def process_query(self, query: str) -> str:
         messages = [{
             "role": "system",
-            "content": "你是一个数据库查询助手，你将根据用户的需求来执行对应的工具来查询数据库数据。根据用户的查询要求来选择对应的工具，注意工具的优先级",
+            "content": "你是一个工具调用助手，你将根据用户的需求来执行对应的工具来查询数据库数据",
         }, {
             "role": "user",
             "content": query,
@@ -117,29 +117,28 @@ class MCPClient:
 async def main():
     config = {
         "mcpServers": {
-            "mysql": {
-                "command": "npx",
-                "args": ["-y", "@f4ww4z/mcp-mysql-server"],
-                "env": {
-                    "MYSQL_HOST": "192.168.2.220",
-                    "MYSQL_USER": "zhxx",
-                    "MYSQL_PASSWORD": "zhxx@123456",
-                    "MYSQL_DATABASE": "zh_reservoir_new"
-                }
-            }
+            "zh-reservoir-new-mcp-server": {
+                "type": "sse",
+                "url": "http://192.168.2.116:20410/sse"
+            },
         }
     }
     mcp_client = MCPClient(config)
     tools = await mcp_client.get_mcp_tools()
-    async with mcp_client.session:
-        # await mcp_client.session.call_tool("connect_db", arguments={
-        #     "host": "mysql.server",
-        #     "user": "zhxx",
-        #     "password": "zhxx@123456",
-        #     "database": "zh_reservoir_new"
-        # })
-        result = await mcp_client.session.call_tool("list_tables")
-        print(result)
+    print(tools)
+    # async with mcp_client.session:
+    #     # await mcp_client.session.call_tool("connect_db", arguments={
+    #     #     "host": "mysql.server",
+    #     #     "user": "zhxx",
+    #     #     "password": "zhxx@123456",
+    #     #     "database": "zh_reservoir_new"
+    #     # })
+    #     result = await mcp_client.session.call_tool("queryOrder", {
+    #         "orderMcpQuery": {
+    #             "orderId": "123"
+    #         }
+    #     })
+    #     print(result)
     await mcp_client.chat_loop()
 
 

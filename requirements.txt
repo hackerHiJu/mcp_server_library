@@ -1,0 +1,4 @@
+minio==7.2.15
+fastmcp==2.10.3
+openai==1.95.1
+Flask==3.1.1
