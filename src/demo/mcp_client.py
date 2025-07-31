@@ -119,13 +119,12 @@ async def main():
         "mcpServers": {
             "zh-reservoir-new-mcp-server": {
                 "type": "sse",
-                "url": "http://192.168.2.116:20410/sse"
+                "url": "http://192.168.2.240:20410/sse"
             },
         }
     }
     mcp_client = MCPClient(config)
     tools = await mcp_client.get_mcp_tools()
-    print(tools)
     # async with mcp_client.session:
     #     # await mcp_client.session.call_tool("connect_db", arguments={
     #     #     "host": "mysql.server",
@@ -133,13 +132,16 @@ async def main():
     #     #     "password": "zhxx@123456",
     #     #     "database": "zh_reservoir_new"
     #     # })
-    #     result = await mcp_client.session.call_tool("queryOrder", {
-    #         "orderMcpQuery": {
-    #             "orderId": "123"
-    #         }
-    #     })
-    #     print(result)
-    await mcp_client.chat_loop()
+    async with mcp_client.session:
+        result = await mcp_client.session.call_tool("queryEvent", {
+            "eventMcpQuery": {
+                "startTime": "2025-07-29 00:00:00",
+                "endTime": "2025-07-29 23:59:00",
+                "type": 3
+            }
+        })
+        print(result)
+    # await mcp_client.chat_loop()
 
 
 if __name__ == '__main__':

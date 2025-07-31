@@ -627,5 +627,12 @@ async def main():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000)
+    # app.run(host="0.0.0.0", port=10000)
     # asyncio.run(main())
+    with open("./demo.md", "r", encoding="utf-8") as f:
+        template = f.read()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    result = loop.run_until_complete(mcp_client.generator_report(template, ""))
+    with open("./报告.md", "w", encoding="utf-8") as writer:
+        writer.write(result)

@@ -2,7 +2,7 @@
   "mcpServers": {
     "zh-reservoir-new-mcp-server": {
       "type": "sse",
-      "url": "http://192.168.2.116:20410/sse"
+      "url": "http://192.168.2.240:20410/sse"
     }
   }
 }

@@ -79,10 +79,7 @@ system_prompt = """
 
 extract_tables = """
 # 任务目标
-根据上下文提供的数据库表与用户的需求描述来提取需要用到的数据库表名，以json格式的数组返回，例如：```json ["order", "plan"] ```
-
-# 要求
-1. 提取表名时判断提取的表是否存在扩展表或者附表，如果存在扩展表时，**需要将主表和扩展表名称一起进行提取**
+根据用户的需求以及提供的数据库表名，分析需要用到哪张数据表，例如：```json ["order", "plan"] ```
 
 # 数据库表
 %s
@@ -116,18 +113,20 @@ messages = [
     },
     {
         "role": "user",
-        "content": extract_tables % (json.dumps(get_database_table(), indent=4, ensure_ascii=False), "帮我查询项目合同名称含有广安前锋环卫项目合同的项目面积信息"),
+        "content": extract_tables % (
+            json.dumps(get_database_table(), indent=4, ensure_ascii=False), "查询项目信息中关联的合同含有广安两个字的项目信息"),
     }
 ]
 
 response = llm_client.chat.completions.create(
     model=MODEL_NAME,
     messages=messages,
+    top_p=0.7,
     extra_body={
         "tok_k": 20,
         "min_p": 0,
         "chat_template_kwargs": {
-            "enable_thinking": False
+            "enable_thinking": True
         }
     }
 )
@@ -149,7 +148,7 @@ while True:
 
     if tables is None or len(tables) == 0:
         break
-
+    print("提取数据表名称:", tables)
     ddl.update(get_table_ddl(tables))
 
     messages.append({
@@ -159,8 +158,9 @@ while True:
     response = llm_client.chat.completions.create(
         model=MODEL_NAME,
         messages=messages,
+        top_p=0.6,
         extra_body={
-            "tok_k": 20,
+            "top_k": 20,
             "min_p": 0,
             "chat_template_kwargs": {
                 "enable_thinking": False
